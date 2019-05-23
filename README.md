@@ -1,4 +1,24 @@
-# serial [![Build Status](https://travis-ci.org/goburrow/serial.svg?branch=master)](https://travis-ci.org/goburrow/serial) [![GoDoc](https://godoc.org/github.com/goburrow/serial?status.svg)](https://godoc.org/github.com/goburrow/serial)
+invented the bicycle)) Simple fork of goburrow/serial to use setterm() from termios lib AND use non-standart (non-posix) termios.Cflag 0x40000000, to manipulate 9 bit's MARK and SPACE states. 
+Changes (after original goburrow/serial):
+1) serial_posix.go: newTermios(&config) => NewTermios(&config) (now it is public)
+2) serial.go: add SetTermios(termios) to Port interface (not need to reopen port to apply new termios settings)
+3) serial_posix.go: add 0x40000000 bit ops, non-posix. tested  linux only (new debian 9.8 and ti arm embed with old kernel 2.6.x)
+case "", "E":	// As mentioned in the modbus spec, the default parity mode must be Even parity
+		// PARENB: Enable parity generation on output.
+		termios.Cflag |= syscall.PARENB
+		// INPCK: Enable input parity checking.
+		termios.Iflag |= syscall.INPCK
+		termios.Cflag &^= 0x40000000
+case "M":
+		termios.Cflag |= 0x40000000
+		termios.Cflag |= syscall.PARODD
+case "S":
+		termios.Cflag |= 0x40000000
+		termios.Cflag |= syscall.PARENB
+
+
+Added port.Setterm  
+
 ## Example
 ```go
 package main
@@ -6,7 +26,7 @@ package main
 import (
 	"log"
 
-	"github.com/goburrow/serial"
+	"github.com/adenis78/serial"
 )
 
 func main() {
@@ -17,6 +37,12 @@ func main() {
 	defer port.Close()
 
 	_, err = port.Write([]byte("serial"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	termios, _ := serial.NewTermios(&config)
+	err = port.SetTermios(termios)
 	if err != nil {
 		log.Fatal(err)
 	}
