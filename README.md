@@ -25,6 +25,17 @@ func main() {
 		log.Fatal(err)
 	}
 	
+	config.Parity = "M"
+	config.StopBits = 1
+	
+	termios, _ := serial.NewTermios(&config)
+	err = port.SetTermios(termios)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	config.Parity = "S"
+
 	termios, _ := serial.NewTermios(&config)
 	err = port.SetTermios(termios)
 	if err != nil {
