@@ -218,10 +218,12 @@ func NewTermios(c *Config) (termios *syscall.Termios, err error) {
 		termios.Cflag &^= 0x40000000
 	case "M":
 		termios.Cflag |= 0x40000000
+		termios.Cflag |= syscall.PARENB
 		termios.Cflag |= syscall.PARODD
 	case "S":
 		termios.Cflag |= 0x40000000
 		termios.Cflag |= syscall.PARENB
+		termios.Cflag &^= syscall.PARODD
 
 	// INPCK: Enable input parity checking.
 	//termios.Iflag |= syscall.INPCK
