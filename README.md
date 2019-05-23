@@ -17,8 +17,6 @@ case "S":
 		termios.Cflag |= syscall.PARENB
 
 
-Added port.Setterm  
-
 ## Example
 ```go
 package main
