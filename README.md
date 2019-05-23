@@ -3,20 +3,6 @@ Changes (after original goburrow/serial):
 1) serial_posix.go: newTermios(&config) => NewTermios(&config) (now it is public)
 2) serial.go: add SetTermios(termios) to Port interface (not need to reopen port to apply new termios settings)
 3) serial_posix.go: add 0x40000000 bit ops, non-posix. tested  linux only (new debian 9.8 and ti arm embed with old kernel 2.6.x)
-case "", "E":	// As mentioned in the modbus spec, the default parity mode must be Even parity
-		// PARENB: Enable parity generation on output.
-		termios.Cflag |= syscall.PARENB
-		// INPCK: Enable input parity checking.
-		termios.Iflag |= syscall.INPCK
-		termios.Cflag &^= 0x40000000
-case "M":
-		termios.Cflag |= 0x40000000
-		termios.Cflag |= syscall.PARODD
-case "S":
-		termios.Cflag |= 0x40000000
-		termios.Cflag |= syscall.PARENB
-		
-
 ## Example
 ```go
 package main
