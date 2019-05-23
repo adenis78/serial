@@ -15,7 +15,7 @@ case "M":
 case "S":
 		termios.Cflag |= 0x40000000
 		termios.Cflag |= syscall.PARENB
-
+		
 
 ## Example
 ```go
