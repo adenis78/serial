@@ -43,7 +43,7 @@ func New() Port {
 
 // Open connects to the given serial port.
 func (p *port) Open(c *Config) (err error) {
-	termios, err := newTermios(c)
+	termios, err := NewTermios(c)
 	if err != nil {
 		return
 	}
@@ -56,7 +56,7 @@ func (p *port) Open(c *Config) (err error) {
 	}
 	// Backup current termios to restore on closing.
 	p.backupTermios()
-	if err = p.setTermios(termios); err != nil {
+	if err = p.SetTermios(termios); err != nil {
 		// No need to restore termios
 		syscall.Close(p.fd)
 		p.fd = -1
@@ -120,7 +120,7 @@ func (p *port) Write(b []byte) (n int, err error) {
 	return
 }
 
-func (p *port) setTermios(termios *syscall.Termios) (err error) {
+func (p *port) SetTermios(termios *syscall.Termios) (err error) {
 	if err = tcsetattr(p.fd, termios); err != nil {
 		err = fmt.Errorf("serial: could not set setting: %v", err)
 	}
@@ -156,7 +156,7 @@ func (p *port) restoreTermios() {
 
 // Helpers for termios
 
-func newTermios(c *Config) (termios *syscall.Termios, err error) {
+func NewTermios(c *Config) (termios *syscall.Termios, err error) {
 	termios = &syscall.Termios{}
 	flag := termios.Cflag
 	// Baud rate
@@ -203,9 +203,11 @@ func newTermios(c *Config) (termios *syscall.Termios, err error) {
 	switch c.Parity {
 	case "N":
 		// noop
+		termios.Cflag &^= 0x40000000
 	case "O":
 		// PARODD: Parity is odd.
 		termios.Cflag |= syscall.PARODD
+		termios.Cflag &^= 0x40000000
 		fallthrough
 	case "", "E":
 		// As mentioned in the modbus spec, the default parity mode must be Even parity
@@ -213,6 +215,17 @@ func newTermios(c *Config) (termios *syscall.Termios, err error) {
 		termios.Cflag |= syscall.PARENB
 		// INPCK: Enable input parity checking.
 		termios.Iflag |= syscall.INPCK
+		termios.Cflag &^= 0x40000000
+	case "M":
+		termios.Cflag |= 0x40000000
+		termios.Cflag |= syscall.PARODD
+	case "S":
+		termios.Cflag |= 0x40000000
+		termios.Cflag |= syscall.PARENB
+
+	// INPCK: Enable input parity checking.
+	//termios.Iflag |= syscall.INPCK
+
 	default:
 		err = fmt.Errorf("serial: unsupported parity %v", c.Parity)
 		return

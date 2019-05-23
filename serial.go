@@ -6,6 +6,7 @@ package serial
 import (
 	"errors"
 	"io"
+	"syscall"
 	"time"
 )
 
@@ -54,6 +55,7 @@ type Port interface {
 	io.ReadWriteCloser
 	// Connect connects to the serial port.
 	Open(*Config) error
+	SetTermios(termios *syscall.Termios) error
 }
 
 // Open opens a serial port.
